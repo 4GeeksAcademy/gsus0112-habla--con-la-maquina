@@ -1,5 +1,8 @@
 'use client'
 
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
 import { useEffect, useRef, useState } from 'react'
 import {
   Bot,
@@ -35,7 +38,7 @@ const INITIAL_STATS: Stats = {
   response: 0,
   latency: 0,
   speed: 0,
-  model: 'llama-3.1-8b-instant',
+  model: 'groq/compound-mini',
 }
 
 const STORAGE_MESSAGES_KEY = 'groq_chat_messages_v1'
@@ -48,9 +51,9 @@ const statCards = [
 ]
 
 const MODEL_CANDIDATES = [
-  process.env.NEXT_PUBLIC_GROQ_MODEL,
-  'llama-3.1-8b-instant',
-  'llama-3.3-70b-versatile',
+  'groq/compound-mini',
+  'groq/compound',
+  'allam-2-7b',
 ].filter((model, index, array): model is string => {
   return Boolean(model) && array.indexOf(model) === index
 })
@@ -397,14 +400,38 @@ export default function Page() {
                       {message.role === 'user' ? <UserRound size={14} /> : <Bot size={15} />}
                     </div>
                     <div className={message.role === 'user' ? 'text-right' : ''}>
-                      <div
-                        className={`rounded-2xl px-4 py-3 text-sm leading-6 whitespace-pre-wrap ${
+                                           <div
+                        className={`rounded-2xl px-4 py-3 text-sm leading-6 ${
                           message.role === 'user'
                             ? 'rounded-tr-sm bg-indigo-600 text-white shadow-md'
                             : 'rounded-tl-sm border border-slate-800 bg-slate-900 text-slate-200'
                         }`}
                       >
-                        {message.content}
+                        {message.role === 'assistant' ? (
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              strong: ({ children }) => <strong className="font-semibold text-slate-100">{children}</strong>,
+                              h3: ({ children }) => <h3 className="text-base font-bold mt-3 mb-1 text-slate-100">{children}</h3>,
+                              ul: ({ children }) => <ul className="list-disc pl-4 space-y-1 mb-2">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal pl-4 space-y-1 mb-2">{children}</ol>,
+                              li: ({ children }) => <li className="text-slate-200">{children}</li>,
+                              table: ({ children }) => (
+                                <div className="overflow-x-auto my-2">
+                                  <table className="text-xs border-collapse w-full">{children}</table>
+                                </div>
+                              ),
+                              th: ({ children }) => <th className="border border-slate-600 px-2 py-1 bg-slate-800 text-left font-semibold">{children}</th>,
+                              td: ({ children }) => <td className="border border-slate-700 px-2 py-1">{children}</td>,
+                              code: ({ children }) => <code className="bg-slate-800 px-1 py-0.5 rounded text-emerald-300 font-mono text-xs">{children}</code>,
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        ) : (
+                          message.content
+                        )}
                       </div>
                       <p className="mt-1.5 px-1 font-mono text-[9px] text-slate-500">
                         {message.time} · {message.role === 'user' ? 'Tú' : 'Llama 3'}
