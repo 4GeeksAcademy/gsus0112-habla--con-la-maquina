@@ -1,1 +1,1 @@
-# Gsus0112-Habla--con-la-maquina
+# Gsus0112-Habla--con-la-maquinanpm install lucide-react
